@@ -1,20 +1,42 @@
-﻿// FileTransfer.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
-//
+﻿
 
 #include <iostream>
-
-int main()
+#include <Windows.h>
+#include <string>
+#include <locale>
+#include <codecvt>  
+int main(int argc, char* argv[])
 {
+    std::string ip;
+    std::string fileName;
+    if (argc=3)
+    {
+        ip = argv[1];
+        fileName = argv[2];
+    }
+    else
+    {
+        return -1;
+    }
+    SOCKET clientSock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    SOCKADDR_IN		remoteAddr;
+    remoteAddr.sin_family = AF_INET;
+    remoteAddr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
+    remoteAddr.sin_port = htons(12001);
+    int ret = ::connect(clientSock, (sockaddr*)(&remoteAddr), sizeof(remoteAddr));
+    if (ret == SOCKET_ERROR)
+    {
+        closesocket(clientSock);
+        return -1;
+    }
+    std::wstring fileNameU = std::wstring_convert<std::codecvt_utf8<WCHAR>, WCHAR>().from_bytes(fileName);
+    HANDLE fileHandle =  CreateFile(fileNameU.c_str(), GENERIC_READ, 0, nullptr, 0, 0, nullptr);
+    TRANSMIT_FILE_BUFFERS TransmitFileBuff;
+    if (TransmitFile(clientSock, fileHandle, 0, 256, nullptr, &TransmitFileBuff, 0))
+    {
+
+
+    }
+    CloseHandle(fileHandle);
     std::cout << "Hello World!\n";
 }
-
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
-
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
