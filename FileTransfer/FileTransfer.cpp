@@ -1,7 +1,4 @@
-﻿
-
-#include <iostream>
-//#include <Windows.h>
+﻿#include <iostream>
 #include <WinSock2.h>
 #include <string>
 #include <locale>
@@ -41,7 +38,7 @@ int main(int argc, char* argv[])
     SOCKET clientSock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (clientSock == INVALID_SOCKET)
     {
-        std::cout << "Create socket channel fail, error code: !" << GetLastError() << std::endl;
+        std::cout << "Create socket channel fail, error code: " << GetLastError() << std::endl;
         return -1;
     }
     SOCKADDR_IN		remoteAddr;
@@ -59,7 +56,7 @@ int main(int argc, char* argv[])
     std::string fileName = fileFullName.substr(fileNamePos+1) + "#--";
     if (::send(clientSock, fileName.c_str(), fileName.length(), 0) != fileName.length())
     {
-        std::cout << "Send fail, error code: !" << GetLastError() << std::endl;
+        std::cout << "Send fail, error code: " << GetLastError() << std::endl;
         closesocket(clientSock);
         return -1;
     }
@@ -71,9 +68,10 @@ int main(int argc, char* argv[])
     HANDLE fileHandle = CreateFile(fileNameU.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
     if (fileHandle == INVALID_HANDLE_VALUE)
     {
-        std::cout << "Open file fail, error code: !" << GetLastError() <<  std::endl;
+        std::cout << "Open file fail, error code: " << GetLastError() <<  std::endl;
+        closesocket(clientSock);
+        return -1;
     } 
-    //TRANSMIT_FILE_BUFFERS TransmitFileBuff;
     if (TransmitFile(clientSock, fileHandle, 0, 0, nullptr, nullptr, TF_USE_DEFAULT_WORKER))
     {
         std::cout << "send success !";
