@@ -9,14 +9,12 @@ using std::string;
 
 std::wstring GetProgramDir()
 {
-    WCHAR exeFullPath[MAX_PATH]; // Full path
+    WCHAR exeFullPath[MAX_PATH]; 
     std::wstring strPath;
-    GetModuleFileName(NULL, exeFullPath, MAX_PATH);
-    strPath = exeFullPath;    // Get full path of the file
+    ::GetModuleFileName(NULL, exeFullPath, MAX_PATH);
+    strPath = exeFullPath;    
     int pos = strPath.find_last_of('\\', strPath.length());
-    return strPath.substr(0, pos);
-    
-    
+    return std::move(strPath.substr(0, pos));
 }
 int main(int argc, char* argv[])
 {
@@ -34,7 +32,7 @@ int main(int argc, char* argv[])
     }
     WORD ver = MAKEWORD(2, 2);
     WSADATA data;
-    WSAStartup(ver, &data);
+    ::WSAStartup(ver, &data);
     SOCKET clientSock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (clientSock == INVALID_SOCKET)
     {
@@ -44,12 +42,12 @@ int main(int argc, char* argv[])
     SOCKADDR_IN		remoteAddr;
     remoteAddr.sin_family = AF_INET;
     remoteAddr.sin_addr.S_un.S_addr = inet_addr(ip.c_str());
-    remoteAddr.sin_port = htons(12001);
+    remoteAddr.sin_port = ::htons(12001);
     int ret = ::connect(clientSock, (sockaddr*)(&remoteAddr), sizeof(remoteAddr));
     if (ret == SOCKET_ERROR)
     {
         std::cout << "Connect server fail, error code: !" << GetLastError() << std::endl;
-        closesocket(clientSock);
+        ::closesocket(clientSock);
         return -1;
     }
     size_t fileNamePos = fileFullName.rfind("\\");
@@ -57,7 +55,7 @@ int main(int argc, char* argv[])
     if (::send(clientSock, fileName.c_str(), fileName.length(), 0) != fileName.length())
     {
         std::cout << "Send fail, error code: " << GetLastError() << std::endl;
-        closesocket(clientSock);
+        ::closesocket(clientSock);
         return -1;
     }
     else
@@ -69,10 +67,10 @@ int main(int argc, char* argv[])
     if (fileHandle == INVALID_HANDLE_VALUE)
     {
         std::cout << "Open file fail, error code: " << GetLastError() <<  std::endl;
-        closesocket(clientSock);
+        ::closesocket(clientSock);
         return -1;
     } 
-    if (TransmitFile(clientSock, fileHandle, 0, 0, nullptr, nullptr, TF_USE_DEFAULT_WORKER))
+    if (::TransmitFile(clientSock, fileHandle, 0, 0, nullptr, nullptr, TF_USE_DEFAULT_WORKER))
     {
         std::cout << "send success !";
     }
@@ -81,7 +79,7 @@ int main(int argc, char* argv[])
         std::cout << GetLastError() << std::endl;
         std::cout << "send fail !";
     }
-    CloseHandle(fileHandle);
-    closesocket(clientSock);
+    ::CloseHandle(fileHandle);
+    ::closesocket(clientSock);
     
 }
