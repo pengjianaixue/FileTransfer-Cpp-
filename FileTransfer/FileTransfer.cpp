@@ -7,7 +7,7 @@
 #include <thread>
 using std::string;
 
-std::wstring GetProgramDir()
+std::wstring getProgramDir()
 {
     WCHAR exeFullPath[MAX_PATH]; 
     std::wstring strPath;
@@ -15,6 +15,24 @@ std::wstring GetProgramDir()
     strPath = exeFullPath;    
     int pos = strPath.find_last_of('\\', strPath.length());
     return std::move(strPath.substr(0, pos));
+}
+std::string  getFileName(std::string fullFileName)
+{
+    size_t fileNamePos = fullFileName.rfind("\\");
+    if (fileNamePos!=std::string::npos)
+    {
+        return std::move(fullFileName.substr(fileNamePos + 1));
+    }
+    else
+    {
+        fileNamePos = fullFileName.rfind("/");
+        if (fileNamePos != std::string::npos)
+        {
+            return std::move(fullFileName.substr(fileNamePos + 1));
+        }
+    }
+    return std::move(std::string(""));
+
 }
 int main(int argc, char* argv[])
 {
@@ -50,8 +68,7 @@ int main(int argc, char* argv[])
         ::closesocket(clientSock);
         return -1;
     }
-    size_t fileNamePos = fileFullName.rfind("\\");
-    std::string fileName = fileFullName.substr(fileNamePos+1) + "#--";
+    std::string fileName = getFileName(fileFullName) + "#--";
     if (::send(clientSock, fileName.c_str(), fileName.length(), 0) != fileName.length())
     {
         std::cout << "Send fail, error code: " << GetLastError() << std::endl;
